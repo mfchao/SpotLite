@@ -2,7 +2,8 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { Friend, Post, User, WebSession } from "./app";
+import { Comment, Friend, Post, User, Vote, WebSession } from "./app";
+import { CommentDoc } from "./concepts/comment";
 import { PostDoc, PostOptions } from "./concepts/post";
 import { UserDoc } from "./concepts/user";
 import { WebSessionDoc } from "./concepts/websession";
@@ -26,9 +27,9 @@ class Routes {
   }
 
   @Router.post("/users")
-  async createUser(session: WebSessionDoc, username: string, password: string) {
+  async createUser(session: WebSessionDoc, username: string, password: string, spotLiteOption: boolean, bio: string, socials: string, anonymousMode: boolean) {
     WebSession.isLoggedOut(session);
-    return await User.create(username, password);
+    return await User.create(username, password, spotLiteOption, bio, socials, anonymousMode);
   }
 
   @Router.patch("/users")
@@ -135,6 +136,71 @@ class Routes {
     const user = WebSession.getUser(session);
     const fromId = (await User.getUserByUsername(from))._id;
     return await Friend.rejectRequest(fromId, user);
+  }
+
+  @Router.post("/comments")
+  async createComment(session: WebSessionDoc, post: ObjectId, content: string, date: Date) {
+    const user = WebSession.getUser(session);
+    const postExists = await Post.doesPostExist(post);
+    const timestamp = new Date();
+    return await Comment.create(user, postExists, content, timestamp);
+  }
+
+  @Router.delete("/comments/:_id")
+  async deleteComment(session: WebSessionDoc, _id: ObjectId) {
+    const user = WebSession.getUser(session);
+    await Comment.isAuthor(user, _id);
+    return Comment.delete(_id);
+  }
+
+  //have to fix get post
+  @Router.get("/comments")
+  async getComments(postID: ObjectId, author?: string) {
+    let comments;
+    const post = await Post.doesPostExist(postID);
+
+    if (author && post) {
+      const id = (await User.getUserByUsername(author))._id;
+      comments = await Comment.getByAuthor(post, id);
+    } else if (post) {
+      comments = await Comment.getByPost(post);
+    }
+    return comments;
+  }
+
+  @Router.patch("/comments/:_id")
+  async updateComment(session: WebSessionDoc, _id: ObjectId, update: Partial<CommentDoc>) {
+    const user = WebSession.getUser(session);
+    await Comment.isAuthor(user, _id);
+    return await Comment.update(_id, update);
+  }
+
+  @Router.post("/votes")
+  async upVoteComment(session: WebSessionDoc, comment: ObjectId, upvote: number) {
+    const user = WebSession.getUser(session);
+    await Comment.getComment(comment);
+    return await Vote.upVoteComment(user, comment, upvote);
+  }
+
+  @Router.post("/votes")
+  async downVoteComment(session: WebSessionDoc, comment: ObjectId, downvote: number) {
+    const user = WebSession.getUser(session);
+    await Comment.getComment(comment);
+    return await Vote.downVoteComment(user, comment, downvote);
+  }
+
+  @Router.post("/votes")
+  async upVotePost(session: WebSessionDoc, post: ObjectId, upvote: number) {
+    const user = WebSession.getUser(session);
+    await Post.doesPostExist(post);
+    return await Vote.upVotePost(user, post, upvote);
+  }
+
+  @Router.post("/votes")
+  async downVotePost(session: WebSessionDoc, post: ObjectId, downvote: number) {
+    const user = WebSession.getUser(session);
+    await Post.doesPostExist(post);
+    return await Vote.downVotePost(user, post, downvote);
   }
 }
 

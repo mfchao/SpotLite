@@ -21,7 +21,7 @@ const operations: operation[] = [
     name: "Create User",
     endpoint: "/api/users",
     method: "POST",
-    fields: { username: "input", password: "input" },
+    fields: { username: "input", password: "input", spotLiteOption: "input", bio: "input", socials: "input", anonymousMode: "input" },
   },
   {
     name: "Login",
@@ -76,6 +76,54 @@ const operations: operation[] = [
     endpoint: "/api/posts/:id",
     method: "DELETE",
     fields: { id: "input" },
+  },
+  {
+    name: "Create Comment",
+    endpoint: "/api/comments",
+    method: "POST",
+    fields: { post: "input", content: "input" },
+  },
+  {
+    name: "Delete Comment",
+    endpoint: "/api/comments/:id",
+    method: "DELETE",
+    fields: { id: "input" },
+  },
+  {
+    name: "Get Comments (empty author for all)",
+    endpoint: "/api/comments",
+    method: "GET",
+    fields: { id: "input", author: "input" },
+  },
+  {
+    name: "Update Comment",
+    endpoint: "/api/comments/:id",
+    method: "PATCH",
+    fields: { id: "input", update: { content: "input" } },
+  },
+  {
+    name: "Upvote Comment",
+    endpoint: "/api/votes",
+    method: "POST",
+    fields: { comment: "input", upvote: "input" },
+  },
+  {
+    name: "Downvote Comment",
+    endpoint: "/api/votes",
+    method: "POST",
+    fields: { comment: "input", downvote: "input" },
+  },
+  {
+    name: "Upvote Post",
+    endpoint: "/api/votes",
+    method: "POST",
+    fields: { post: "input", upvote: "input" },
+  },
+  {
+    name: "Downvote Post",
+    endpoint: "/api/votes",
+    method: "POST",
+    fields: { post: "input", downvote: "input" },
   },
 ];
 
