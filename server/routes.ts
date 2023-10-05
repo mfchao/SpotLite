@@ -139,11 +139,10 @@ class Routes {
   }
 
   @Router.post("/comments")
-  async createComment(session: WebSessionDoc, post: ObjectId, content: string, date: Date) {
+  async createComment(session: WebSessionDoc, post: ObjectId, content: string, replies?: ObjectId) {
     const user = WebSession.getUser(session);
     const postExists = await Post.doesPostExist(post);
-    const timestamp = new Date();
-    return await Comment.create(user, postExists, content, timestamp);
+    return await Comment.create(user, postExists, content, replies);
   }
 
   @Router.delete("/comments/:_id")
@@ -153,19 +152,14 @@ class Routes {
     return Comment.delete(_id);
   }
 
-  //have to fix get post
   @Router.get("/comments")
-  async getComments(postID: ObjectId, author?: string) {
-    let comments;
-    const post = await Post.doesPostExist(postID);
-
-    if (author && post) {
-      const id = (await User.getUserByUsername(author))._id;
-      comments = await Comment.getByAuthor(post, id);
-    } else if (post) {
-      comments = await Comment.getByPost(post);
+  async getComments(post?: ObjectId) {
+    if (post) {
+      await Post.doesPostExist(post);
+      return await Comment.getByPost(post);
+    } else {
+      return await Comment.getComments({});
     }
-    return comments;
   }
 
   @Router.patch("/comments/:_id")
@@ -175,32 +169,39 @@ class Routes {
     return await Comment.update(_id, update);
   }
 
-  @Router.post("/votes")
-  async upVoteComment(session: WebSessionDoc, comment: ObjectId, upvote: number) {
+  @Router.post("/votes/upvote")
+  async upVote(session: WebSessionDoc, comment?: ObjectId, post?: ObjectId) {
     const user = WebSession.getUser(session);
-    await Comment.getComment(comment);
-    return await Vote.upVoteComment(user, comment, upvote);
+    if (comment) {
+      await Comment.getComment(comment);
+      return await Vote.upVote(user, comment, post);
+    } else if (post) {
+      await Post.doesPostExist(post);
+      return await Vote.upVote(user, comment, post);
+    }
   }
 
-  @Router.post("/votes")
-  async downVoteComment(session: WebSessionDoc, comment: ObjectId, downvote: number) {
+  @Router.post("/votes/downvote")
+  async downVote(session: WebSessionDoc, comment?: ObjectId, post?: ObjectId) {
     const user = WebSession.getUser(session);
-    await Comment.getComment(comment);
-    return await Vote.downVoteComment(user, comment, downvote);
+    if (comment) {
+      await Comment.getComment(comment);
+      return await Vote.downVote(user, comment, post);
+    } else if (post) {
+      await Post.doesPostExist(post);
+      return await Vote.downVote(user, comment, post);
+    }
   }
 
-  @Router.post("/votes")
-  async upVotePost(session: WebSessionDoc, post: ObjectId, upvote: number) {
-    const user = WebSession.getUser(session);
-    await Post.doesPostExist(post);
-    return await Vote.upVotePost(user, post, upvote);
-  }
-
-  @Router.post("/votes")
-  async downVotePost(session: WebSessionDoc, post: ObjectId, downvote: number) {
-    const user = WebSession.getUser(session);
-    await Post.doesPostExist(post);
-    return await Vote.downVotePost(user, post, downvote);
+  @Router.get("/votes")
+  async getVotes(comment?: ObjectId, post?: ObjectId) {
+    if (comment) {
+      return await Vote.getbyComment(comment);
+    } else if (post) {
+      return await Vote.getbyPost(post);
+    } else {
+      return await Vote.getVotes({});
+    }
   }
 }
 

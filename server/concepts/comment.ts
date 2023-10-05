@@ -6,19 +6,25 @@ export interface CommentDoc extends BaseDoc {
   author: ObjectId;
   post: ObjectId;
   content: string;
-  date: Date;
+  replies?: ObjectId[];
 }
 
 export default class CommentConcept {
   public readonly comments = new DocCollection<CommentDoc>("comments");
 
-  async create(author: ObjectId, post: ObjectId, content: string, date: Date) {
-    const _id = await this.comments.createOne({ author, post, content, date });
+  async create(author: ObjectId, post: ObjectId, content: string, replies?: ObjectId) {
+    //add replies
+    const _id = await this.comments.createOne({ author, post, content });
+
+    // if (replies) {
+    //   await this.updateParentComment(replies, _id);
+    // }
+
     await this.canCreate(post, content);
     return { msg: "Comment successfully created!", comment: await this.comments.readOne({ _id }) };
   }
 
-  private async canCreate(post: ObjectId, content: string) {
+  private async canCreate(post: ObjectId, content: string, parentCommentId?: ObjectId) {
     if (!post || !content) {
       throw new BadValuesError("post and Content must be non-empty!");
     }
@@ -82,5 +88,10 @@ export default class CommentConcept {
     }
   }
 
-  //reply to comment
+  // private async updateParentComment(parentCommentId: ObjectId, replyId: ObjectId) {
+  //   const parentComment = await this.comments.readOne({ _id: parentCommentId });
+  //   if (parentComment) {
+  //     await this.comments.updateOne({ _id: parentCommentId }, { $set: { "replies.$": replyId } });
+  //   }
+  // }
 }

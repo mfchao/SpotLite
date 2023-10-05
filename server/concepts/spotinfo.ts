@@ -7,4 +7,8 @@ export interface SpotInfoDoc extends BaseDoc {
 
 export default class SpotInfoConcept {
   public readonly spotInfos = new DocCollection<SpotInfoDoc>("spotInfos");
+
+  //get intro for selected spotliters
+
+  //get closing for selected spotliters
 }

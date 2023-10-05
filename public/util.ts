@@ -81,7 +81,7 @@ const operations: operation[] = [
     name: "Create Comment",
     endpoint: "/api/comments",
     method: "POST",
-    fields: { post: "input", content: "input" },
+    fields: { post: "input", content: "input", replyTo: "input" },
   },
   {
     name: "Delete Comment",
@@ -90,10 +90,10 @@ const operations: operation[] = [
     fields: { id: "input" },
   },
   {
-    name: "Get Comments (empty author for all)",
+    name: "Get Comments (empty for all)",
     endpoint: "/api/comments",
     method: "GET",
-    fields: { id: "input", author: "input" },
+    fields: { post: "input" },
   },
   {
     name: "Update Comment",
@@ -102,28 +102,22 @@ const operations: operation[] = [
     fields: { id: "input", update: { content: "input" } },
   },
   {
-    name: "Upvote Comment",
-    endpoint: "/api/votes",
+    name: "Upvote ",
+    endpoint: "/api/votes/upvote",
     method: "POST",
-    fields: { comment: "input", upvote: "input" },
+    fields: { comment: "input", post: "input" },
   },
   {
-    name: "Downvote Comment",
-    endpoint: "/api/votes",
+    name: "Downvote",
+    endpoint: "/api/votes/downvote",
     method: "POST",
-    fields: { comment: "input", downvote: "input" },
+    fields: { comment: "input", post: "input" },
   },
   {
-    name: "Upvote Post",
+    name: "Get Votes (empty for all)",
     endpoint: "/api/votes",
-    method: "POST",
-    fields: { post: "input", upvote: "input" },
-  },
-  {
-    name: "Downvote Post",
-    endpoint: "/api/votes",
-    method: "POST",
-    fields: { post: "input", downvote: "input" },
+    method: "GET",
+    fields: { comment: "input", post: "input" },
   },
 ];
 
