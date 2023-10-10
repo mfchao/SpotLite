@@ -1,4 +1,3 @@
-import CategoryConcept from "./concepts/category";
 import CommentConcept from "./concepts/comment";
 import FriendConcept from "./concepts/friend";
 import PostConcept from "./concepts/post";
@@ -16,5 +15,4 @@ export const Friend = new FriendConcept();
 export const Comment = new CommentConcept();
 export const Vote = new VoteConcept();
 export const Spotlite = new SpotliteConcept();
-export const Category = new CategoryConcept();
 export const SpotInfo = new SpotInfoConcept();
