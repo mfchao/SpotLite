@@ -5,6 +5,7 @@ import { NotAllowedError, NotFoundError } from "./errors";
 
 export interface PostOptions {
   backgroundColor?: string;
+  category?: string;
 }
 
 export interface PostDoc extends BaseDoc {
