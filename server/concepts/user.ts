@@ -5,7 +5,7 @@ import { BadValuesError, NotAllowedError, NotFoundError } from "./errors";
 export interface UserDoc extends BaseDoc {
   username: string;
   password: string;
-  spotLiteOption: boolean;
+  spotLiteOption: string;
   bio: string;
   socials: string;
   anonymousMode: boolean;
@@ -14,7 +14,7 @@ export interface UserDoc extends BaseDoc {
 export default class UserConcept {
   public readonly users = new DocCollection<UserDoc>("users");
 
-  async create(username: string, password: string, spotLiteOption: boolean, bio: string, socials: string, anonymousMode: boolean) {
+  async create(username: string, password: string, spotLiteOption: string, bio: string, socials: string, anonymousMode: boolean) {
     await this.canCreate(username, password, spotLiteOption, anonymousMode);
     const _id = await this.users.createOne({ username, password, spotLiteOption, bio, socials, anonymousMode });
     return { msg: "User created successfully!", user: await this.users.readOne({ _id }) };
@@ -40,6 +40,16 @@ export default class UserConcept {
       throw new NotFoundError(`User not found!`);
     }
     return this.sanitizeUser(user);
+  }
+
+  //get spotlite pool if exits
+  async getSpotLitePool() {
+    const usersWithSpotLiteOption = await this.users.readMany({ spotLiteOption: "true" });
+    return usersWithSpotLiteOption;
+  }
+
+  async getSpotLiteIDs(spotliterIDs: ObjectId[]) {
+    return await this.users.readMany({ _id: { $in: spotliterIDs } });
   }
 
   async idsToUsernames(ids: ObjectId[]) {
@@ -85,7 +95,7 @@ export default class UserConcept {
     }
   }
 
-  private async canCreate(username: string, password: string, spotLiteOption: boolean, anonymousMode: boolean) {
+  private async canCreate(username: string, password: string, spotLiteOption: string, anonymousMode: boolean) {
     if (!username || !password || !spotLiteOption || !anonymousMode) {
       throw new BadValuesError("Username, password, spotLiteOption, and anonymousMode must be non-empty!");
     }

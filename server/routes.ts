@@ -2,7 +2,7 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { Comment, Friend, Post, User, Vote, WebSession } from "./app";
+import { Comment, Friend, Post, SpotInfo, Spotlite, User, Vote, WebSession } from "./app";
 import { CommentDoc } from "./concepts/comment";
 import { PostDoc, PostOptions } from "./concepts/post";
 import { UserDoc } from "./concepts/user";
@@ -21,13 +21,18 @@ class Routes {
     return await User.getUsers();
   }
 
+  @Router.get("/users/:spotLiteOption")
+  async getSpotLitePool() {
+    return await User.getSpotLitePool();
+  }
+
   @Router.get("/users/:username")
   async getUser(username: string) {
     return await User.getUserByUsername(username);
   }
 
   @Router.post("/users")
-  async createUser(session: WebSessionDoc, username: string, password: string, spotLiteOption: boolean, bio: string, socials: string, anonymousMode: boolean) {
+  async createUser(session: WebSessionDoc, username: string, password: string, spotLiteOption: string, bio: string, socials: string, anonymousMode: boolean) {
     WebSession.isLoggedOut(session);
     return await User.create(username, password, spotLiteOption, bio, socials, anonymousMode);
   }
@@ -202,6 +207,50 @@ class Routes {
     } else {
       return await Vote.getVotes({});
     }
+  }
+
+  @Router.post("/spotlites")
+  async createSpotliters() {
+    let pool = await User.getSpotLitePool();
+    const spotLiterIds = pool.map((spotliter) => spotliter._id);
+    return await Spotlite.createSpotliters(spotLiterIds);
+  }
+
+  @Router.get("/spotlites")
+  async getSpotliters() {
+    return await Spotlite.getSpotliters();
+  }
+
+  @Router.patch("/spotlites")
+  async resetSpotliters() {
+    let pool = await User.getSpotLitePool();
+    const spotLiterIds = pool.map((spotliter) => spotliter._id);
+    return await Spotlite.resetSpotliters(spotLiterIds);
+  }
+
+  @Router.patch("/spotlites/cycle")
+  async incrementCycleDays() {
+    let pool = await User.getSpotLitePool();
+    const spotLiterIds = pool.map((spotliter) => spotliter._id);
+    return await Spotlite.incrementCycleDays(spotLiterIds);
+  }
+
+  @Router.post("/spotinfo")
+  async createSpotInfo() {
+    let spotliters = await Spotlite.getSpotliters();
+    let spotliterIDs = spotliters.map((spotliter) => spotliter.spotliter);
+    const spotliterUsers = await User.getSpotLiteIDs(spotliterIDs);
+    const spotLiterBios = spotliterUsers.map((user) => user.bio);
+    const spotLiterSocials = spotliterUsers.map((user) => user.socials);
+    return await SpotInfo.createSpotInfo(spotliterIDs, spotLiterBios, spotLiterSocials);
+  }
+  @Router.get("/spotinfo/intro")
+  async getInfo() {
+    return await SpotInfo.getIntros();
+  }
+  @Router.get("/spotinfo/closing")
+  async getClosing() {
+    return await SpotInfo.getClosings();
   }
 }
 

@@ -119,6 +119,54 @@ const operations: operation[] = [
     method: "GET",
     fields: { comment: "input", post: "input" },
   },
+  {
+    name: "Get SpotLite Pool",
+    endpoint: "/api/users/:spotLiteOption",
+    method: "GET",
+    fields: {},
+  },
+  {
+    name: "Create SpotLiters",
+    endpoint: "/api/spotLites",
+    method: "POST",
+    fields: {},
+  },
+  {
+    name: "Get Current SpotLiters",
+    endpoint: "/api/spotLites",
+    method: "GET",
+    fields: {},
+  },
+  {
+    name: "Reset SpotLiters",
+    endpoint: "/api/spotLites",
+    method: "PATCH",
+    fields: {},
+  },
+  {
+    name: "Increment Cycle Days",
+    endpoint: "/api/spotLites/cycle",
+    method: "PATCH",
+    fields: {},
+  },
+  {
+    name: "Create SpotLiter Intros",
+    endpoint: "/api/spotinfo",
+    method: "POST",
+    fields: {},
+  },
+  {
+    name: "Get SpotLiter Intros",
+    endpoint: "/api/spotinfo/intro",
+    method: "GET",
+    fields: {},
+  },
+  {
+    name: "Get SpotLiter Closings",
+    endpoint: "/api/spotinfo/closing",
+    method: "GET",
+    fields: {},
+  },
 ];
 
 // Do not edit below here.
