@@ -9,14 +9,21 @@ export interface UserDoc extends BaseDoc {
   bio: string;
   socials: string;
   anonymousMode: boolean;
+  profilePhoto?: string;
 }
 
 export default class UserConcept {
   public readonly users = new DocCollection<UserDoc>("users");
 
-  async create(username: string, password: string, spotLiteOption: string, bio: string, socials: string, anonymousMode: boolean) {
+  async create(username: string, password: string, spotLiteOption: string, bio: string, socials: string, anonymousMode: boolean, photo?: string) {
     await this.canCreate(username, password, spotLiteOption, anonymousMode);
-    const _id = await this.users.createOne({ username, password, spotLiteOption, bio, socials, anonymousMode });
+    let profilePhoto;
+    if (photo) {
+      profilePhoto = photo;
+    } else {
+      profilePhoto = "https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg";
+    }
+    const _id = await this.users.createOne({ username, password, spotLiteOption, bio, socials, anonymousMode, profilePhoto });
     return { msg: "User created successfully!", user: await this.users.readOne({ _id }) };
   }
 

@@ -6,6 +6,7 @@ import { NotAllowedError, NotFoundError } from "./errors";
 export interface PostOptions {
   backgroundColor?: string;
   category?: string;
+  image?: string;
 }
 
 export interface PostDoc extends BaseDoc {
@@ -46,6 +47,19 @@ export default class PostConcept {
     this.sanitizeUpdate(update);
     await this.posts.updateOne({ _id }, update);
     return { msg: "Post successfully updated!" };
+  }
+
+  async getById(_id: ObjectId) {
+    const post = await this.posts.readOne({ _id });
+    if (post === null) {
+      throw new NotFoundError(`User not found!`);
+    }
+    return post;
+  }
+
+  async deleteAll() {
+    const posts = await this.posts.deleteMany({});
+    return posts;
   }
 
   async delete(_id: ObjectId) {

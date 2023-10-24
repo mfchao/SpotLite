@@ -17,8 +17,8 @@ class Routes {
   }
 
   @Router.get("/users")
-  async getUsers() {
-    return await User.getUsers();
+  async getUsers(username: string) {
+    return await User.getUsers(username);
   }
 
   @Router.get("/users/:spotLiteOption")
@@ -32,9 +32,9 @@ class Routes {
   }
 
   @Router.post("/users")
-  async createUser(session: WebSessionDoc, username: string, password: string, spotLiteOption: string, bio: string, socials: string, anonymousMode: boolean) {
+  async createUser(session: WebSessionDoc, username: string, password: string, spotLiteOption: string, bio: string, socials: string, anonymousMode: boolean, photo: string) {
     WebSession.isLoggedOut(session);
-    return await User.create(username, password, spotLiteOption, bio, socials, anonymousMode);
+    return await User.create(username, password, spotLiteOption, bio, socials, anonymousMode, photo);
   }
 
   @Router.patch("/users")
@@ -89,11 +89,31 @@ class Routes {
     return await Post.update(_id, update);
   }
 
+  @Router.get("/posts/:_id")
+  async getPostByID(_id: ObjectId) {
+    return await Post.getById(_id);
+  }
+
   @Router.delete("/posts/:_id")
   async deletePost(session: WebSessionDoc, _id: ObjectId) {
     const user = WebSession.getUser(session);
     await Post.isAuthor(user, _id);
     return Post.delete(_id);
+  }
+
+  @Router.delete("/posts/")
+  async deleteAll() {
+    return await Post.deleteAll();
+  }
+
+  @Router.delete("/votes/")
+  async deleteVotes() {
+    return await Vote.deleteAll();
+  }
+
+  @Router.delete("/spotinfo/")
+  async deleteSpots() {
+    return await SpotInfo.deleteAll();
   }
 
   @Router.get("/friends")
@@ -144,10 +164,10 @@ class Routes {
   }
 
   @Router.post("/comments")
-  async createComment(session: WebSessionDoc, post: ObjectId, content: string, replies?: ObjectId) {
+  async createComment(session: WebSessionDoc, post: ObjectId, content: string, parent?: ObjectId) {
     const user = WebSession.getUser(session);
     const postExists = await Post.doesPostExist(post);
-    return await Comment.create(user, postExists, content, replies);
+    return await Comment.create(user, postExists, content, parent);
   }
 
   @Router.delete("/comments/:_id")
@@ -159,12 +179,19 @@ class Routes {
 
   @Router.get("/comments")
   async getComments(post?: ObjectId) {
+    let comments;
     if (post) {
-      await Post.doesPostExist(post);
-      return await Comment.getByPost(post);
+      const id = await Post.doesPostExist(post);
+      comments = await Comment.getByPost(id);
     } else {
-      return await Comment.getComments({});
+      comments = await Comment.getComments({});
     }
+    return comments;
+  }
+
+  @Router.get("/comments/:_id")
+  async getChildrenComments(_id: ObjectId) {
+    return await Comment.getChildrenComments(_id);
   }
 
   @Router.patch("/comments/:_id")
@@ -183,6 +210,30 @@ class Routes {
     } else if (post) {
       await Post.doesPostExist(post);
       return await Vote.upVote(user, comment, post);
+    }
+  }
+
+  @Router.patch("/votes/upvote")
+  async removeUpvote(session: WebSessionDoc, comment?: ObjectId, post?: ObjectId) {
+    const user = WebSession.getUser(session);
+    if (comment) {
+      await Comment.getComment(comment);
+      return await Vote.removeUpvote(user, comment, post);
+    } else if (post) {
+      await Post.doesPostExist(post);
+      return await Vote.removeUpvote(user, comment, post);
+    }
+  }
+
+  @Router.patch("/votes/downvote")
+  async removeDownvote(session: WebSessionDoc, comment?: ObjectId, post?: ObjectId) {
+    const user = WebSession.getUser(session);
+    if (comment) {
+      await Comment.getComment(comment);
+      return await Vote.removeDownvote(user, comment, post);
+    } else if (post) {
+      await Post.doesPostExist(post);
+      return await Vote.removeDownvote(user, comment, post);
     }
   }
 

@@ -6,19 +6,33 @@ export interface CommentDoc extends BaseDoc {
   author: ObjectId;
   post: ObjectId;
   content: string;
-  replies?: ObjectId[];
+  parent?: ObjectId;
+  children?: ObjectId[];
 }
 
 export default class CommentConcept {
   public readonly comments = new DocCollection<CommentDoc>("comments");
 
-  async create(author: ObjectId, post: ObjectId, content: string, replies?: ObjectId) {
-    //add replies
-    const _id = await this.comments.createOne({ author, post, content });
+  async create(author: ObjectId, post: ObjectId, content: string, parent?: ObjectId) {
+    let _id;
+    if (parent) {
+      _id = await this.comments.createOne({ author, post, content, parent });
+      const parentComment = await this.comments.readOne({ _id: parent });
 
-    // if (replies) {
-    //   await this.updateParentComment(replies, _id);
-    // }
+      if (parentComment) {
+        if (parentComment.post.toString() !== post.toString()) {
+          throw new BadValuesError("The parent comment is not under the same post!");
+        }
+        parentComment.children = parentComment.children ? [...parentComment.children, _id] : [_id];
+      } else {
+        throw new NotFoundError("Parent comment not found!");
+      }
+
+      // Update the parent comment
+      await this.comments.updateOne({ _id: parent }, parentComment);
+    } else {
+      _id = await this.comments.createOne({ author, post, content });
+    }
 
     await this.canCreate(post, content);
     return { msg: "Comment successfully created!", comment: await this.comments.readOne({ _id }) };
@@ -28,6 +42,15 @@ export default class CommentConcept {
     if (!post || !content) {
       throw new BadValuesError("post and Content must be non-empty!");
     }
+  }
+
+  async getChildrenComments(parent: ObjectId) {
+    const parentComment = await this.comments.readOne({ _id: parent });
+    if (!parentComment) {
+      throw new NotFoundError(`Comment ${parent} does not exist!`);
+    }
+    const childrenComments = await this.comments.readMany({ _id: { $in: parentComment.children || [] } });
+    return childrenComments;
   }
 
   async delete(_id: ObjectId) {
@@ -45,10 +68,14 @@ export default class CommentConcept {
     }
   }
 
-  async getComments(query: Filter<CommentDoc>) {
+  async getComments(query: Filter<CommentDoc>, parentOnly: boolean = true) {
+    if (parentOnly) {
+      query.parent = { $exists: false };
+    }
     const comments = await this.comments.readMany(query, {
       sort: { dateUpdated: -1 },
     });
+
     return comments;
   }
 
@@ -87,11 +114,4 @@ export default class CommentConcept {
       }
     }
   }
-
-  // private async updateParentComment(parentCommentId: ObjectId, replyId: ObjectId) {
-  //   const parentComment = await this.comments.readOne({ _id: parentCommentId });
-  //   if (parentComment) {
-  //     await this.comments.updateOne({ _id: parentCommentId }, { $set: { "replies.$": replyId } });
-  //   }
-  // }
 }

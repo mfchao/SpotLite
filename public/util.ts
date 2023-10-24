@@ -21,7 +21,7 @@ const operations: operation[] = [
     name: "Create User",
     endpoint: "/api/users",
     method: "POST",
-    fields: { username: "input", password: "input", spotLiteOption: "input", bio: "input", socials: "input", anonymousMode: "input" },
+    fields: { username: "input", password: "input", spotLiteOption: "input", bio: "input", socials: "input", anonymousMode: "input", photo: "input" },
   },
   {
     name: "Login",
@@ -39,7 +39,7 @@ const operations: operation[] = [
     name: "Update User",
     endpoint: "/api/users",
     method: "PATCH",
-    fields: { update: { username: "input", password: "input" } },
+    fields: { update: { username: "input", password: "input", spotLiteOption: "input", bio: "input", socials: "input", anonymousMode: "input", profilePhoto: "input" } },
   },
   {
     name: "Delete User",
@@ -49,7 +49,7 @@ const operations: operation[] = [
   },
   {
     name: "Get Users (empty for all)",
-    endpoint: "/api/users/:username",
+    endpoint: "/api/users",
     method: "GET",
     fields: { username: "input" },
   },
@@ -60,16 +60,40 @@ const operations: operation[] = [
     fields: { author: "input" },
   },
   {
+    name: "Delete Posts",
+    endpoint: "/api/posts",
+    method: "DELETE",
+    fields: {},
+  },
+  {
+    name: "Delete Votes",
+    endpoint: "/api/votes",
+    method: "DELETE",
+    fields: {},
+  },
+  {
+    name: "Delete Spots",
+    endpoint: "/api/spotinfo",
+    method: "DELETE",
+    fields: {},
+  },
+  {
+    name: "Get Posts by ID",
+    endpoint: "/api/posts/:id",
+    method: "GET",
+    fields: { id: "input" },
+  },
+  {
     name: "Create Post",
     endpoint: "/api/posts",
     method: "POST",
-    fields: { content: "input" },
+    fields: { content: "input", options: { image: "input" } },
   },
   {
     name: "Update Post",
     endpoint: "/api/posts/:id",
     method: "PATCH",
-    fields: { id: "input", update: { content: "input", options: { backgroundColor: "input" } } },
+    fields: { id: "input", update: { content: "input", options: { backgroundColor: "input", image: "input" } } },
   },
   {
     name: "Delete Post",
@@ -81,7 +105,7 @@ const operations: operation[] = [
     name: "Create Comment",
     endpoint: "/api/comments",
     method: "POST",
-    fields: { post: "input", content: "input", replyTo: "input" },
+    fields: { post: "input", content: "input", parent: "input" },
   },
   {
     name: "Delete Comment",
@@ -96,6 +120,12 @@ const operations: operation[] = [
     fields: { post: "input" },
   },
   {
+    name: "Get Children Comments",
+    endpoint: "/api/comments/:id",
+    method: "GET",
+    fields: { id: "input" },
+  },
+  {
     name: "Update Comment",
     endpoint: "/api/comments/:id",
     method: "PATCH",
@@ -105,6 +135,18 @@ const operations: operation[] = [
     name: "Upvote ",
     endpoint: "/api/votes/upvote",
     method: "POST",
+    fields: { comment: "input", post: "input" },
+  },
+  {
+    name: "Remove Upvote",
+    endpoint: "/api/votes/upvote",
+    method: "PATCH",
+    fields: { comment: "input", post: "input" },
+  },
+  {
+    name: "Remove Downvote",
+    endpoint: "/api/votes/downvote",
+    method: "PATCH",
     fields: { comment: "input", post: "input" },
   },
   {

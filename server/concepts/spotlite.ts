@@ -70,17 +70,16 @@ export default class SpotliteConcept {
   async incrementCycleDays(pool: ObjectId[]) {
     const spotliters = await this.spotlites.readMany({});
 
-    const cycleDaysArray = spotliters.map((spotliter) => spotliter.cycleDays);
+    const currentDayOfWeek = new Date().getDay() || 7;
 
-    if (cycleDaysArray[0] < 8) {
-      for (const spotliter of spotliters) {
-        const updatedCycleDays = spotliter.cycleDays + 1;
-        await this.spotlites.updateOne({ _id: spotliter._id }, { cycleDays: updatedCycleDays });
-      }
-      return { msg: "CycleDays updated for all spotliters!", cycleDays: await this.spotlites.readMany({}) };
-    } else {
+    if (currentDayOfWeek === 1) {
       await this.resetSpotliters(pool);
       return { msg: "New Cycle!" };
     }
+
+    for (const spotliter of spotliters) {
+      await this.spotlites.updateOne({ _id: spotliter._id }, { cycleDays: currentDayOfWeek });
+    }
+    return currentDayOfWeek;
   }
 }

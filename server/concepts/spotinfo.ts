@@ -52,4 +52,9 @@ export default class SpotInfoConcept {
       return { msg: "Got closing cards:", ClosingCards: spotInfos.map((spotInfo) => spotInfo.closing) };
     }
   }
+
+  async deleteAll() {
+    const infos = await this.spotInfos.deleteMany({});
+    return infos;
+  }
 }
